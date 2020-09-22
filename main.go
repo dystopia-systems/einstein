@@ -1,0 +1,5 @@
+package einstein
+
+func main() {
+
+}
