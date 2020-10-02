@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb
+    hostname: einstein-db
+    container_name: einstein-db
+    command: --default-authentication-plugin=mysql_native_password
+      restart: always
+      environment:
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_PASSOWRD: ${MYSQL_PASSWORD}
+        MYSQL_DATABASE: einstein
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    expose:
+      - '3306'
+    restart: always
+
+  worker:
+    container_name: worker
+    hostname: worker
+    depends_on:
+      - 'db'
+    build:
+      context: ./worker
+    environment:
+      - MY_SQL_CONN_STRING=${MY_SQL_GORM_CONN_STRING}
+    restart: always
+    expose:
+      - '8888'
+
+  bot:
+    container_name: bot
+    hostname: bot
+    depends_on:
+      - 'worker'
+      - 'db'
+    build:
+      context: ./bot
+    environment:
+      - EINSTEIN_GET_RPC_CONFIG=${EINSTEIN__RPC_CONFIG}
+
+  einstein:
+    container_name: einstein
+    hostname: einstein
+    build:
+      context: ./einstein
+    environment:
+      - SARUMAN_API_KEY=${SARUMAN_API_KEY}
+      - SARUMAN_URL=${SARUMAN_URL}
